@@ -18,7 +18,7 @@
     height: 100%;
     width: 100%;
     overflow: hidden;
-    font-family: -apple-system, BlinkMacOSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: #e0e0e0;
   }
@@ -178,6 +178,13 @@
     color: rgba(255,255,255,0.35);
     pointer-events: none;
   }
+
+  .error-message {
+    color: #ff6b6b;
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -193,7 +200,8 @@
   </header>
 
   <div class="engine-buttons">
-    <button class="engine-btn active" data-engine="bing">Bing</button>
+    <button class="engine-btn active" data-engine="proxy">Proxy Mode</button>
+    <button class="engine-btn" data-engine="bing">Bing</button>
     <button class="engine-btn" data-engine="brave">Brave</button>
     <button class="engine-btn" data-engine="duck">DuckDuckGo</button>
     <button class="engine-btn" data-engine="wiki">Wikipedia</button>
@@ -206,46 +214,130 @@
     <div class="loading-overlay" id="loader">
       <div class="spinner"></div>
       <div>Loading resources...</div>
+      <div class="error-message" id="error-msg"></div>
     </div>
   </div>
 
-  <div class="credits">Maths Study • Educational Reference Tool</div>
+  <div class="credits">Maths Study • Educational Reference Tool • Virtual Bypass Mode Enabled</div>
 </div>
 
 <script>
 // ──────────────────────────────────────────────
-//  Maths Study - Enhanced Viewer (2026 edition)
+//  Maths Study - Enhanced Virtual Proxy (2026 edition)
 // ──────────────────────────────────────────────
 
 const frame = document.getElementById('content-frame');
 const loader = document.getElementById('loader');
+const errorMsg = document.getElementById('error-msg');
 const input = document.getElementById('search-input');
 const engineButtons = document.querySelectorAll('.engine-btn');
 
-let currentEngine = 'bing';
+let currentEngine = 'proxy'; // Default to new proxy mode
+
+const CORS_PROXY = 'https://corsproxy.io/?'; // Public CORS proxy for bypassing
 
 const ENGINES = {
   bing:   'https://www.bing.com/search?q=',
   brave:  'https://search.brave.com/search?q=',
   duck:   'https://duckduckgo.com/?q=',
   wiki:   'https://en.wikipedia.org/wiki/Special:Search?search=',
-  url:    '' // special handling
+  url:    '' // direct
 };
 
-function showLoader() { loader.classList.add('active'); }
-function hideLoader() { setTimeout(() => loader.classList.remove('active'), 600); }
+function showLoader(message = 'Loading resources...') {
+  loader.querySelector('div:nth-child(2)').textContent = message;
+  loader.classList.add('active');
+  errorMsg.style.display = 'none';
+}
+
+function hideLoader() {
+  setTimeout(() => loader.classList.remove('active'), 600);
+}
+
+function showError(message) {
+  errorMsg.textContent = message;
+  errorMsg.style.display = 'block';
+}
+
+function makeAbsolute(url, base) {
+  try {
+    return new URL(url, base).href;
+  } catch (e) {
+    return url;
+  }
+}
+
+async function proxyFetch(targetUrl) {
+  showLoader('Fetching through virtual proxy...');
+  try {
+    const response = await fetch(CORS_PROXY + encodeURIComponent(targetUrl));
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    let html = await response.text();
+
+    // Basic rewriting: make resources absolute and proxy them
+    const baseUrl = new URL(targetUrl).origin;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Rewrite links, scripts, images, etc.
+    const elements = doc.querySelectorAll('a[href], link[href], script[src], img[src], source[src]');
+    elements.forEach(el => {
+      const attr = el.hasAttribute('href') ? 'href' : 'src';
+      let url = el.getAttribute(attr);
+      if (url) {
+        url = makeAbsolute(url, baseUrl);
+        el.setAttribute(attr, CORS_PROXY + encodeURIComponent(url));
+      }
+    });
+
+    // Add base tag
+    const base = doc.createElement('base');
+    base.href = baseUrl;
+    doc.head.insertBefore(base, doc.head.firstChild);
+
+    html = doc.documentElement.outerHTML;
+
+    frame.srcdoc = html;
+    hideLoader();
+  } catch (error) {
+    showError(`Failed to load: ${error.message}. Some sites block proxies.`);
+    setTimeout(hideLoader, 3000);
+  }
+}
 
 function loadPage(url) {
   if (!url) return;
-  
   showLoader();
   frame.src = url;
-  
-  // Most browsers fire load event even on errors, so we use timeout
-  setTimeout(hideLoader, 1800);
+  setTimeout(hideLoader, 1800); // Fallback
 }
 
-frame.onload = hideLoader;
+function performSearch() {
+  let query = input.value.trim();
+  if (!query) return;
+
+  let target = '';
+
+  if (currentEngine === 'proxy' || currentEngine === 'url') {
+    if (!/^https?:\/\//i.test(query)) {
+      query = 'https://' + query;
+    }
+    if (currentEngine === 'proxy') {
+      proxyFetch(query);
+      return;
+    } else {
+      target = query;
+    }
+  } else if (currentEngine in ENGINES) {
+    target = ENGINES[currentEngine] + encodeURIComponent(query);
+  } else {
+    target = ENGINES.brave + encodeURIComponent(query);
+  }
+
+  loadPage(target);
+}
 
 // Engine switching
 engineButtons.forEach(btn => {
@@ -256,30 +348,6 @@ engineButtons.forEach(btn => {
   });
 });
 
-// Main search/go handler
-function performSearch() {
-  let query = input.value.trim();
-  if (!query) return;
-
-  let target = '';
-
-  if (currentEngine === 'url') {
-    if (!/^https?:\/\//i.test(query)) {
-      query = 'https://' + query;
-    }
-    target = query;
-  } 
-  else if (currentEngine in ENGINES) {
-    target = ENGINES[currentEngine] + encodeURIComponent(query);
-  } 
-  else {
-    // fallback - brave
-    target = ENGINES.brave + encodeURIComponent(query);
-  }
-
-  loadPage(target);
-}
-
 // Events
 input.addEventListener('keypress', e => {
   if (e.key === 'Enter') {
@@ -288,7 +356,6 @@ input.addEventListener('keypress', e => {
 });
 
 document.addEventListener('keydown', e => {
-  // Ctrl+K or / to focus search
   if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
     e.preventDefault();
     input.focus();
@@ -300,7 +367,7 @@ window.addEventListener('load', () => {
   input.focus();
 });
 
-// Bonus: type "math" → shows nice maths wallpaper (just for fun)
+// Easter egg
 input.addEventListener('input', () => {
   if (input.value.toLowerCase() === 'math') {
     frame.srcdoc = `
