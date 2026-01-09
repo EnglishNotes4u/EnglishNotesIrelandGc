@@ -49,6 +49,12 @@
     background: linear-gradient(90deg, #a1c4fd, #c2e9fb);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+
+  .logo:hover {
+    transform: scale(1.05);
   }
 
   .search-container {
@@ -56,10 +62,13 @@
     max-width: 720px;
     margin: 0 30px;
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   #search-input {
-    width: 100%;
+    flex: 1;
     padding: 14px 24px 14px 52px;
     font-size: 1.05rem;
     border: none;
@@ -88,6 +97,29 @@
     transform: translateY(-50%);
     color: rgba(255,255,255,0.6);
     font-size: 1.3rem;
+    pointer-events: none;
+  }
+
+  #search-button {
+    padding: 14px 28px;
+    font-size: 1.05rem;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+  }
+
+  #search-button:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 18px rgba(102,126,234,0.6);
+    background: linear-gradient(90deg, #5a72d8, #6a3f90);
+  }
+
+  #search-button:active {
+    transform: scale(0.98);
   }
 
   .engine-buttons {
@@ -98,6 +130,11 @@
     padding: 14px 0;
     background: rgba(15, 32, 39, 0.4);
     border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.3s ease;
+  }
+
+  .engine-buttons:hover {
+    background: rgba(15, 32, 39, 0.5);
   }
 
   .engine-btn {
@@ -109,6 +146,24 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .engine-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.5s ease;
+  }
+
+  .engine-btn:hover::before {
+    transform: scale(1);
   }
 
   .engine-btn:hover {
@@ -125,6 +180,8 @@
     flex: 1;
     position: relative;
     overflow: hidden;
+    background: rgba(0,0,0,0.1);
+    transition: background 0.5s ease;
   }
 
   #content-frame {
@@ -132,6 +189,11 @@
     height: 100%;
     border: none;
     background: white;
+    transition: opacity 0.5s ease;
+  }
+
+  #content-frame.loading {
+    opacity: 0.5;
   }
 
   .loading-overlay {
@@ -177,6 +239,11 @@
     font-size: 0.75rem;
     color: rgba(255,255,255,0.35);
     pointer-events: none;
+    transition: color 0.3s ease;
+  }
+
+  .credits:hover {
+    color: rgba(255,255,255,0.6);
   }
 
   .error-message {
@@ -184,6 +251,12 @@
     text-align: center;
     margin-top: 10px;
     display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 </style>
 </head>
@@ -196,6 +269,7 @@
     <div class="search-container">
       <span class="search-icon">🔍</span>
       <input type="text" id="search-input" placeholder="Search maths topics, formulas, videos or websites..." autofocus autocomplete="off"/>
+      <button id="search-button">Search</button>
     </div>
   </header>
 
@@ -223,18 +297,19 @@
 
 <script>
 // ──────────────────────────────────────────────
-//  Maths Study - Enhanced Virtual Proxy (2026 edition)
+//  Maths Study - Super Cool Edition (2026)
 // ──────────────────────────────────────────────
 
 const frame = document.getElementById('content-frame');
 const loader = document.getElementById('loader');
 const errorMsg = document.getElementById('error-msg');
 const input = document.getElementById('search-input');
+const searchBtn = document.getElementById('search-button');
 const engineButtons = document.querySelectorAll('.engine-btn');
 
-let currentEngine = 'proxy'; // Default to new proxy mode
+let currentEngine = 'proxy'; // Default to proxy mode
 
-const CORS_PROXY = 'https://corsproxy.io/?'; // Public CORS proxy for bypassing
+const CORS_PROXY = 'https://corsproxy.io/?'; // Public CORS proxy
 
 const ENGINES = {
   bing:   'https://www.bing.com/search?q=',
@@ -248,10 +323,14 @@ function showLoader(message = 'Loading resources...') {
   loader.querySelector('div:nth-child(2)').textContent = message;
   loader.classList.add('active');
   errorMsg.style.display = 'none';
+  frame.classList.add('loading');
 }
 
 function hideLoader() {
-  setTimeout(() => loader.classList.remove('active'), 600);
+  setTimeout(() => {
+    loader.classList.remove('active');
+    frame.classList.remove('loading');
+  }, 600);
 }
 
 function showError(message) {
@@ -276,12 +355,10 @@ async function proxyFetch(targetUrl) {
     }
     let html = await response.text();
 
-    // Basic rewriting: make resources absolute and proxy them
     const baseUrl = new URL(targetUrl).origin;
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    // Rewrite links, scripts, images, etc.
     const elements = doc.querySelectorAll('a[href], link[href], script[src], img[src], source[src]');
     elements.forEach(el => {
       const attr = el.hasAttribute('href') ? 'href' : 'src';
@@ -292,7 +369,6 @@ async function proxyFetch(targetUrl) {
       }
     });
 
-    // Add base tag
     const base = doc.createElement('base');
     base.href = baseUrl;
     doc.head.insertBefore(base, doc.head.firstChild);
@@ -302,7 +378,7 @@ async function proxyFetch(targetUrl) {
     frame.srcdoc = html;
     hideLoader();
   } catch (error) {
-    showError(`Failed to load: ${error.message}. Some sites block proxies.`);
+    showError(`Failed to load: ${error.message}. Try Direct URL mode for this site.`);
     setTimeout(hideLoader, 3000);
   }
 }
@@ -311,7 +387,7 @@ function loadPage(url) {
   if (!url) return;
   showLoader();
   frame.src = url;
-  setTimeout(hideLoader, 1800); // Fallback
+  setTimeout(hideLoader, 1800);
 }
 
 function performSearch() {
@@ -339,12 +415,16 @@ function performSearch() {
   loadPage(target);
 }
 
-// Engine switching
+// Engine switching with animation
 engineButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     engineButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentEngine = btn.dataset.engine;
+    // Animate button container on switch
+    const engines = document.querySelector('.engine-buttons');
+    engines.style.transform = 'scale(1.02)';
+    setTimeout(() => engines.style.transform = 'scale(1)', 200);
   });
 });
 
@@ -355,6 +435,8 @@ input.addEventListener('keypress', e => {
   }
 });
 
+searchBtn.addEventListener('click', performSearch);
+
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
     e.preventDefault();
@@ -362,12 +444,25 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Initial focus
+// Initial focus with animation
 window.addEventListener('load', () => {
   input.focus();
+  input.style.animation = 'pulse 1.5s ease infinite';
+  setTimeout(() => input.style.animation = '', 3000);
 });
 
-// Easter egg
+// Define pulse animation
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(161,196,253,0.35); }
+    70% { box-shadow: 0 0 0 10px rgba(161,196,253,0); }
+    100% { box-shadow: 0 0 0 0 rgba(161,196,253,0); }
+  }
+`;
+document.head.appendChild(style);
+
+// Easter egg remains
 input.addEventListener('input', () => {
   if (input.value.toLowerCase() === 'math') {
     frame.srcdoc = `
