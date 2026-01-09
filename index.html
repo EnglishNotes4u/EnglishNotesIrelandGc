@@ -1,167 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notes - Math Revision</title>
-<!-- Very boring & school-looking title + favicon trick -->
-<link rel="icon" href="data:,">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Maths Study - Resources & Tools</title>
+<meta name="description" content="Mathematics study materials, calculators, resources and reference"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>π</text></svg>"/>
+
 <style>
-    body {
-        font-family: "Times New Roman", Times, serif;
-        background: #f8f8f8;
-        color: #222;
-        margin: 0;
-        padding: 30px 40px;
-        line-height: 1.48;
-    }
-    .container {
-        max-width: 880px;
-        margin: 0 auto;
-        background: white;
-        padding: 38px;
-        border: 1px solid #ddd;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    h1 {
-        font-size: 22px;
-        color: #1a1a1a;
-        margin-top: 0;
-        text-align: center;
-    }
-    .search-box {
-        margin: 30px 0 40px;
-        text-align: center;
-    }
-    input[type="text"] {
-        width: 70%;
-        max-width: 520px;
-        padding: 11px 16px;
-        font-size: 16px;
-        border: 1px solid #aaa;
-        border-radius: 0;
-        font-family: inherit;
-    }
-    button {
-        padding: 11px 24px;
-        font-size: 16px;
-        background: #444;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 0;
-    }
-    button:hover { background: #333; }
-    iframe {
-        width: 100%;
-        height: 78vh;
-        border: 1px solid #ccc;
-        margin-top: 15px;
-        background: white;
-    }
-    .small-hint {
-        font-size: 12px;
-        color: #777;
-        text-align: center;
-        margin-top: 40px;
-    }
-    .fake-tabs {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        color: #555;
-    }
-    .fake-tab.active { color: #000; font-weight: bold; border-bottom: 2px solid #000; }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacOSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #e0e0e0;
+  }
+
+  #main-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 18px 30px;
+    background: rgba(15, 32, 39, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .logo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #a1c4fd, #c2e9fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .search-container {
+    flex: 1;
+    max-width: 720px;
+    margin: 0 30px;
+    position: relative;
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 14px 24px 14px 52px;
+    font-size: 1.05rem;
+    border: none;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    outline: none;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+  }
+
+  #search-input::placeholder {
+    color: rgba(255,255,255,0.55);
+  }
+
+  #search-input:focus {
+    background: rgba(255,255,255,0.22);
+    box-shadow: 0 0 0 3px rgba(161,196,253,0.35);
+    transform: translateY(-1px);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.6);
+    font-size: 1.3rem;
+  }
+
+  .engine-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 14px 0;
+    background: rgba(15, 32, 39, 0.4);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .engine-btn {
+    padding: 8px 18px;
+    border-radius: 30px;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: #ddd;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .engine-btn:hover {
+    background: rgba(255,255,255,0.18);
+  }
+
+  .engine-btn.active {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+  }
+
+  #frame-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #content-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+  }
+
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,32,39,0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #a1c4fd;
+    font-size: 1.3rem;
+    gap: 20px;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+  }
+
+  .loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(161,196,253,0.2);
+    border-top: 5px solid #a1c4fd;
+    border-radius: 50%;
+    animation: spin 1.1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .credits {
+    position: absolute;
+    bottom: 12px;
+    right: 20px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.35);
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="fake-tabs">
-        <span class="fake-tab active">Algebra Notes</span>
-        <span class="fake-tab">Geometry</span>
-        <span class="fake-tab">Calculus</span>
-        <span class="fake-tab">Past Papers</span>
+<div id="main-container">
+  <header>
+    <div class="logo">Maths Study</div>
+    
+    <div class="search-container">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search maths topics, formulas, videos or websites..." autofocus autocomplete="off"/>
     </div>
+  </header>
 
-    <h1>Mathematics Revision Portal 2025–2026</h1>
+  <div class="engine-buttons">
+    <button class="engine-btn active" data-engine="bing">Bing</button>
+    <button class="engine-btn" data-engine="brave">Brave</button>
+    <button class="engine-btn" data-engine="duck">DuckDuckGo</button>
+    <button class="engine-btn" data-engine="wiki">Wikipedia</button>
+    <button class="engine-btn" data-engine="url">Direct URL</button>
+  </div>
 
-    <div class="search-box">
-        <input type="text" id="q" placeholder="Search topic / formula / past paper / website" autofocus>
-        <button onclick="go()">Search</button>
+  <div id="frame-container">
+    <iframe id="content-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation"></iframe>
+    
+    <div class="loading-overlay" id="loader">
+      <div class="spinner"></div>
+      <div>Loading resources...</div>
     </div>
+  </div>
 
-    <iframe id="content" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"></iframe>
-
-    <div class="small-hint">
-        Use full URLs for best results • DuckDuckGo • Google • Direct site • Khan Academy • Desmos
-    </div>
+  <div class="credits">Maths Study • Educational Reference Tool</div>
 </div>
 
 <script>
-// Very boring names on purpose
-const engines = {
-    d: "https://duckduckgo.com/?q=",
-    g: "https://www.google.com/search?q=",
-    k: "https://www.khanacademy.org/search?referer=%2F&page_search_query=",
-    y: "https://www.youtube.com/results?search_query=",
-    w: "https://en.wikipedia.org/w/index.php?search=",
-    direct: ""
+// ──────────────────────────────────────────────
+//  Maths Study - Enhanced Viewer (2026 edition)
+// ──────────────────────────────────────────────
+
+const frame = document.getElementById('content-frame');
+const loader = document.getElementById('loader');
+const input = document.getElementById('search-input');
+const engineButtons = document.querySelectorAll('.engine-btn');
+
+let currentEngine = 'bing';
+
+const ENGINES = {
+  bing:   'https://www.bing.com/search?q=',
+  brave:  'https://search.brave.com/search?q=',
+  duck:   'https://duckduckgo.com/?q=',
+  wiki:   'https://en.wikipedia.org/wiki/Special:Search?search=',
+  url:    '' // special handling
 };
 
-let currentMode = "d"; // default duckduckgo
+function showLoader() { loader.classList.add('active'); }
+function hideLoader() { setTimeout(() => loader.classList.remove('active'), 600); }
 
-function go() {
-    let val = document.getElementById("q").value.trim();
-    if (!val) return;
-
-    let url = "";
-
-    // Quick shortcuts people usually type in school filters
-    if (val.startsWith("!d ")) { currentMode = "d"; val = val.slice(3); }
-    if (val.startsWith("!g ")) { currentMode = "g"; val = val.slice(3); }
-    if (val.startsWith("!y ")) { currentMode = "y"; val = val.slice(3); }
-    if (val.startsWith("!k ")) { currentMode = "k"; val = val.slice(3); }
-
-    if (val.match(/^https?:\/\//i)) {
-        // direct url
-        url = val;
-    }
-    else if (currentMode === "direct") {
-        if (!val.includes(".")) val += ".com";
-        url = "https://" + val;
-    }
-    else {
-        url = engines[currentMode] + encodeURIComponent(val);
-    }
-
-    document.getElementById("content").src = url;
-    document.getElementById("content").style.display = "block";
+function loadPage(url) {
+  if (!url) return;
+  
+  showLoader();
+  frame.src = url;
+  
+  // Most browsers fire load event even on errors, so we use timeout
+  setTimeout(hideLoader, 1800);
 }
 
-// Enter key support
-document.getElementById("q").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") go();
+frame.onload = hideLoader;
+
+// Engine switching
+engineButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    engineButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentEngine = btn.dataset.engine;
+  });
 });
 
-// Some people type these by accident / muscle memory
-const aliases = {
-    "yt": "y", "youtube": "y",
-    "wiki": "w", "wikipedia": "w",
-    "khan": "k",
-    "google": "g", "ggl": "g",
-    "ddg": "d", "duck": "d"
-};
+// Main search/go handler
+function performSearch() {
+  let query = input.value.trim();
+  if (!query) return;
 
-document.getElementById("q").addEventListener("input", function(e) {
-    let val = e.target.value.trim().toLowerCase();
-    if (aliases[val]) {
-        currentMode = aliases[val];
-        // optional: clear after switching
-        // e.target.value = "";
+  let target = '';
+
+  if (currentEngine === 'url') {
+    if (!/^https?:\/\//i.test(query)) {
+      query = 'https://' + query;
     }
+    target = query;
+  } 
+  else if (currentEngine in ENGINES) {
+    target = ENGINES[currentEngine] + encodeURIComponent(query);
+  } 
+  else {
+    // fallback - brave
+    target = ENGINES.brave + encodeURIComponent(query);
+  }
+
+  loadPage(target);
+}
+
+// Events
+input.addEventListener('keypress', e => {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  // Ctrl+K or / to focus search
+  if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
+    e.preventDefault();
+    input.focus();
+  }
+});
+
+// Initial focus
+window.addEventListener('load', () => {
+  input.focus();
+});
+
+// Bonus: type "math" → shows nice maths wallpaper (just for fun)
+input.addEventListener('input', () => {
+  if (input.value.toLowerCase() === 'math') {
+    frame.srcdoc = `
+      <body style="margin:0;height:100vh;background:#0f0c29;background:linear-gradient(to right,#24243e,#302b63,#0f0c29);color:white;display:grid;place-items:center;font-family:sans-serif;">
+        <div style="text-align:center">
+          <h1 style="font-size:6rem;opacity:0.9;margin-bottom:1rem;">π ≈ 3.14159</h1>
+          <p style="font-size:1.6rem;opacity:0.7;">Mathematics is the language with which God has written the universe</p>
+          <p style="margin-top:3rem;opacity:0.5;font-size:1.1rem;">— Galileo Galilei</p>
+        </div>
+      </body>`;
+  }
 });
 </script>
 </body>
