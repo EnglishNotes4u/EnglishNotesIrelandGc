@@ -1,0 +1,12 @@
+{
+  "name": "67-speed-auto",
+  "version": "1.0.0",
+  "description": "Automate 67 Speed game to set score to 899",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}
